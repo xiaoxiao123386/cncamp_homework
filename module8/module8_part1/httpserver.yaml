@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: httpserver
+spec:
+  containers:
+    - image: hellodockerhello/httpserver:v3
+      name: httpserver
+      # set pod's resources requests and limits, it'll need at least 64MiB Memory and 0.5 CPU
+      # and can't exceed 128MiB Memory and 1 CPU.
+      # when set like this, its QoS type is "Burstable.
+      resources:
+        requests:
+          memory: "64Mi"
+          cpu: "500m"
+        limits:
+          memory: "128Mi"
+          cpu: "1000m"
+      # inject env VERSION from configmap http-config
+      env:
+        - name: VERSION
+          valueFrom:
+            configMapKeyRef:
+              name: http-config
+              key: env-parameters
+      lifecycle:
+        # when pod is started, echo info to a file
+        postStart:
+          exec:
+            command: ["/bin/sh", "-c", "echo 'start success' > /tmp/success_info"]
+        # when pod is terminated, execute `killall -2` to ensure process exit properly
+        preStop:
+          exec:
+            command: ["/bin/sh", "-c", "while killall -2 web; do sleep 1; done"]
+      # regularly probe tcp port 80 to check whether port 80 is listened correctly
+      livenessProbe:
+        tcpSocket:
+          port: 80
+        initialDelaySeconds: 3
+        periodSeconds: 5
+      # regularly probe http healthz uri to check whether service is normal
+      readinessProbe:
+        httpGet:
+          path: /healthz
+          port: 80
+        initialDelaySeconds: 3
+        periodSeconds: 5
+  # time to wait before changing a TERM signal to a KILL signal to the pod's main process
+  terminationGracePeriodSeconds: 10
