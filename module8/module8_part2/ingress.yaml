@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: test-ingress
+  annotations:
+    # use annotation, specify ingress controller to nginx ingress controller
+    kubernetes.io/ingress.class: "nginx"
+spec:
+  # config tls secret and host, the secret is what we create previously
+  tls:
+    - hosts:
+      - cncamp.com
+      secretName: cncamp-tls
+  rules:
+  # config host rules, when receive specified host and prefix uri, will transfer to backend service httpserver:80
+  - host: cncamp.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: httpserver
+            port:
+              number: 80
