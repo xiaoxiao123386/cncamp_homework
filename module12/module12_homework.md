@@ -139,8 +139,8 @@ http://$NodeIP:$TracingPort
 
 - 考虑 open tracing 的接入
 
-  ```
+  ```shell
   # 详见最终步骤的 2、3，主要关注 service 配置将追踪的 Header 一直带下去的代码改动，以及 Jaeger 的安装配置及查看步骤
   ```
 
-  ![](./service0_trace.jpg)
+  ![](./jaeger_search.jpg)![](./service0_trace.jpg)
